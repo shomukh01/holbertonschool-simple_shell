@@ -9,9 +9,11 @@
 int main(void)
 {
 	char *line = NULL;
-	char *command;
+	char *args[10];
+	char *token;
 	size_t len = 0;
 	ssize_t nread;
+	int i;
 
 	while (1)
 	{
@@ -26,10 +28,20 @@ int main(void)
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		command = strtok(line, " ");
+		token = strtok(line, " ");
+		i = 0;
 
-		if (command != NULL)
-			execute_command(command);
+		while (token != NULL)
+		{
+			args[i] = token;
+			token = strtok(NULL, " ");
+			i++;
+		}
+
+		args[i] = NULL;
+
+		if (args[0] != NULL)
+			execute_command(args);
 	}
 
 	free(line);

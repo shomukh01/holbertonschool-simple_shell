@@ -1,21 +1,18 @@
 #include "shell.h"
 
 /**
- * execute_command - execute a command
- * @command: command to execute
+ * execute_command - execute command
+ * @args: command arguments
  *
  * Return: Nothing
  */
-void execute_command(char *command)
+void execute_command(char **args)
 {
 	pid_t pid;
 	int status;
-	char *args[2];
-
-	args[0] = command;
-	args[1] = NULL;
 
 	pid = fork();
+
 	if (pid == -1)
 	{
 		perror("fork");
@@ -24,7 +21,7 @@ void execute_command(char *command)
 
 	if (pid == 0)
 	{
-		if (execve(command, args, environ) == -1)
+		if (execve(args[0], args, environ) == -1)
 		{
 			perror("./hsh");
 			exit(127);
