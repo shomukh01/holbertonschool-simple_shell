@@ -1,4 +1,5 @@
 #include "shell.h"
+#include <string.h>
 
 /**
  * main - entry point
@@ -8,6 +9,7 @@
 int main(void)
 {
 	char *line = NULL;
+	char *command;
 	size_t len = 0;
 	ssize_t nread;
 
@@ -17,14 +19,17 @@ int main(void)
 			printf("#cisfun$ ");
 
 		nread = getline(&line, &len, stdin);
+
 		if (nread == -1)
 			break;
 
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		if (line[0] != '\0')
-			execute_command(line);
+		command = strtok(line, " ");
+
+		if (command != NULL)
+			execute_command(command);
 	}
 
 	free(line);
