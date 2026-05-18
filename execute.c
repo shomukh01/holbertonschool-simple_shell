@@ -1,32 +1,34 @@
 #include "shell.h"
 
 /**
- * execute_command - execute command
- * @args: command arguments
- *
- * Return: Nothing
+ * execute_command - Forks a child process and executes a command
+ * @full_path: The full validated path of the command (e.g., /bin/ls)
+ * @args: Array of strings containing the command and its arguments
  */
-void execute_command(char **args)
+void execute_command(char *full_path, char **args)
 {
-	pid_t pid;
+	pid_t child_pid;
 	int status;
 
-	pid = fork();
-
-	if (pid == -1)
+	child_pid = fork();
+	if (child_pid == -1)
 	{
-		perror("fork");
+		perror("Fork failure");
 		return;
 	}
 
-	if (pid == 0)
+	if (child_pid == 0)
 	{
-		if (execve(args[0], args, environ) == -1)
+		/* Execute the command with the current environment variables */
+		if (execve(full_path, args, environ) == -1)
 		{
-			perror("./hsh");
-			exit(127);
+			perror("Execution error");
+			exit(EXIT_FAILURE);
 		}
 	}
-
-	wait(&status);
+	else
+	{
+		/* Parent process waits for the child process to complete */
+		wait(&status);
+	}
 }
