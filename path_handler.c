@@ -42,29 +42,21 @@ char *find_path(char *command)
 {
 	char *path_env, *path_copy, *token, *file_path;
 	struct stat st;
-	int cmd_len, dir_len;
 
-	/* If command specifies an explicit path, check it directly */
 	if (command[0] == '/' || command[0] == '.')
 		return (check_current_dir(command));
 
 	path_env = _getenv("PATH");
-	/* If PATH is deleted entirely from environment, do NOT search current dir */
 	if (!path_env)
 		return (NULL);
-
-	/* If PATH is an empty string, behavior defaults to current directory */
 	if (strlen(path_env) == 0)
 		return (check_current_dir(command));
 
 	path_copy = strdup(path_env);
-	cmd_len = strlen(command);
 	token = strtok(path_copy, ":");
-
 	while (token != NULL)
 	{
-		dir_len = strlen(token);
-		file_path = malloc(dir_len + cmd_len + 2);
+		file_path = malloc(strlen(token) + strlen(command) + 2);
 		if (!file_path)
 		{
 			free(path_copy);
