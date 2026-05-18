@@ -18,5 +18,6 @@ char *_getenv(const char *name);
 int execute_command(char *full_path, char **args);
 int check_builtin(char **args, char *line, int last_status);
 void handle_input(char *line, int *last_status);
+void print_env(void);
 
 #endif

@@ -14,9 +14,13 @@ void handle_input(char *line, int *last_status)
 	args = tokenize_input(line);
 	if (args && args[0])
 	{
-		/* Task 5: Check for exit built-in command with last_status */
+		/* Check for built-ins (exit or env) */
 		if (check_builtin(args, line, *last_status) == 1)
+		{
+			free(args);
+			*last_status = 0;
 			return;
+		}
 
 		/* Task 4: Search for command in PATH */
 		full_path = find_path(args[0]);
