@@ -44,11 +44,17 @@ char *find_path(char *command)
 	struct stat st;
 	int cmd_len, dir_len;
 
+	/* If command specifies an explicit path, check it directly */
 	if (command[0] == '/' || command[0] == '.')
 		return (check_current_dir(command));
 
 	path_env = _getenv("PATH");
-	if (!path_env || strlen(path_env) == 0)
+	/* If PATH is deleted entirely from environment, do NOT search current dir */
+	if (!path_env)
+		return (NULL);
+
+	/* If PATH is an empty string, behavior defaults to current directory */
+	if (strlen(path_env) == 0)
 		return (check_current_dir(command));
 
 	path_copy = strdup(path_env);
@@ -77,5 +83,5 @@ char *find_path(char *command)
 		token = strtok(NULL, ":");
 	}
 	free(path_copy);
-	return (check_current_dir(command));
+	return (NULL);
 }
