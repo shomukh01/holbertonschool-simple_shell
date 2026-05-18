@@ -2,33 +2,36 @@
 
 /**
  * execute_command - Forks a child process and executes a command
- * @full_path: The full validated path of the command (e.g., /bin/ls)
- * @args: Array of strings containing the command and its arguments
+ * @full_path: The full validated path of the command
+ * @args: Array of strings containing the command and arguments
+ * Return: The exit status of the executed command
  */
-void execute_command(char *full_path, char **args)
+int execute_command(char *full_path, char **args)
 {
 	pid_t child_pid;
 	int status;
+	int exit_status = 0;
 
 	child_pid = fork();
 	if (child_pid == -1)
 	{
 		perror("Fork failure");
-		return;
+		return (1);
 	}
 
 	if (child_pid == 0)
 	{
-		/* Execute the command with the current environment variables */
 		if (execve(full_path, args, environ) == -1)
 		{
 			perror("Execution error");
-			exit(EXIT_FAILURE);
+			exit(127);
 		}
 	}
 	else
 	{
-		/* Parent process waits for the child process to complete */
 		wait(&status);
+		if (WIFEXITED(status))
+			exit_status = WEXITSTATUS(status);
 	}
+	return (exit_status);
 }

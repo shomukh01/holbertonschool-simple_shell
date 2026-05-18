@@ -3,9 +3,10 @@
 /**
  * handle_input - Process and execute the parsed command arguments
  * @line: The raw input string from getline
+ * @last_status: Pointer to the last exit status integer
  * Return: void
  */
-void handle_input(char *line)
+void handle_input(char *line, int *last_status)
 {
 	char **args;
 	char *full_path;
@@ -13,24 +14,21 @@ void handle_input(char *line)
 	args = tokenize_input(line);
 	if (args && args[0])
 	{
-		/* Task 5: Check for exit built-in command */
-		if (check_builtin(args) == 1)
-		{
-			free(args);
-			free(line);
-			exit(EXIT_SUCCESS);
-		}
+		/* Task 5: Check for exit built-in command with last_status */
+		if (check_builtin(args, line, *last_status) == 1)
+			return;
 
 		/* Task 4: Search for command in PATH */
 		full_path = find_path(args[0]);
 		if (full_path == NULL)
 		{
-			fprintf(stderr, "./shell: 1: %s: not found\n", args[0]);
+			fprintf(stderr, "./hsh: 1: %s: not found\n", args[0]);
+			*last_status = 127;
 		}
 		else
 		{
-			/* Task 2 & 3: Execute command with arguments */
-			execute_command(full_path, args);
+			/* Execute and update the last exit status */
+			*last_status = execute_command(full_path, args);
 			if (full_path != args[0])
 				free(full_path);
 		}
@@ -47,10 +45,10 @@ int main(void)
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t nread;
+	int last_status = 0;
 
 	while (1)
 	{
-		/* Print prompt only if in interactive mode */
 		if (isatty(STDIN_FILENO))
 			write(STDOUT_FILENO, "#cisfun$ ", 9);
 
@@ -60,15 +58,13 @@ int main(void)
 			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			free(line);
-			exit(EXIT_SUCCESS);
+			exit(last_status);
 		}
 
-		/* Remove trailing newline character */
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		/* Call helper function to process commands */
-		handle_input(line);
+		handle_input(line, &last_status);
 	}
 	free(line);
 	return (0);

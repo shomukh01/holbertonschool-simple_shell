@@ -15,8 +15,8 @@ extern char **environ;
 char **tokenize_input(char *line);
 char *find_path(char *command);
 char *_getenv(const char *name);
-void execute_command(char *full_path, char **args);
-int check_builtin(char **args);
-void handle_input(char *line);
+int execute_command(char *full_path, char **args);
+int check_builtin(char **args, char *line, int last_status);
+void handle_input(char *line, int *last_status);
 
 #endif
