@@ -1,55 +1,34 @@
 #include "shell.h"
 
 /**
- * handle_input - Process and execute the parsed command arguments
- * @line: The raw input string from getline
- * @last_status: Pointer to the last exit status integer
+ * handle_sigint - Handles the SIGINT signal (Ctrl+C)
+ * @sig: The signal number
+ *
  * Return: void
  */
-void handle_input(char *line, int *last_status)
+void handle_sigint(int sig)
 {
-	char **args;
-	char *full_path;
-
-	args = tokenize_input(line);
-	if (args && args[0])
-	{
-		/* Check for built-ins (exit or env) */
-		if (check_builtin(args, line, *last_status) == 1)
-		{
-			free(args);
-			*last_status = 0;
-			return;
-		}
-
-		/* Task 4: Search for command in PATH */
-		full_path = find_path(args[0]);
-		if (full_path == NULL)
-		{
-			fprintf(stderr, "./hsh: 1: %s: not found\n", args[0]);
-			*last_status = 127;
-		}
-		else
-		{
-			/* Execute and update the last exit status */
-			*last_status = execute_command(full_path, args);
-			if (full_path != args[0])
-				free(full_path);
-		}
-	}
-	free(args);
+	(void)sig;
+	write(STDOUT_FILENO, "\n#cisfun$ ", 10);
 }
 
 /**
- * main - Core loop of the simple shell
- * Return: 0 on success
+ * main - Entry point for the custom simple shell
+ * @ac: Argument count
+ * @av: Argument vector
+ *
+ * Return: Status of the last executed command
  */
-int main(void)
+int main(int ac, char **av)
 {
 	char *line = NULL;
+	char **args = NULL;
 	size_t len = 0;
 	ssize_t nread;
-	int last_status = 0;
+	int status = 0;
+	(void)ac;
+
+	signal(SIGINT, handle_sigint);
 
 	while (1)
 	{
@@ -62,14 +41,19 @@ int main(void)
 			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			free(line);
-			exit(last_status);
+			exit(status);
 		}
 
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		handle_input(line, &last_status);
+		args = parse_line(line);
+		if (args && args[0])
+		{
+			status = execute_command(args, av[0]);
+		}
+		free(args);
 	}
 	free(line);
-	return (0);
+	return (status);
 }

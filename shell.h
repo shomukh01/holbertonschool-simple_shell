@@ -19,5 +19,9 @@ int execute_command(char *full_path, char **args);
 int check_builtin(char **args, char *line, int last_status);
 void handle_input(char *line, int *last_status);
 void print_env(void);
-
+int main(int ac, char **av);
+void handle_sigint(int sig);
+char **parse_line(char *line);
+int execute_command(char **args, char *shell_name);
+char *find_path(char *command);
 #endif
