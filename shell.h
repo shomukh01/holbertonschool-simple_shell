@@ -6,23 +6,25 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <signal.h>
 
 extern char **environ;
 
-/* Prototypes */
-char **tokenize_input(char *line);
-char *find_path(char *command);
-char *_getenv(const char *name);
-int execute_command(char *full_path, char **args);
-int check_builtin(char **args, char *line, int last_status);
-void handle_input(char *line, int *last_status);
-void print_env(void);
+/* Core Logic and Main Handlers */
 int main(int ac, char **av);
 void handle_sigint(int sig);
-char **parse_line(char *line);
-int execute_command(char **args, char *shell_name);
-char *find_path(char *command);
 int execute_logical(char *line, char *shell_name);
-#endif
+int execute_command(char **args, char *shell_name);
+
+/* Parsing and Path Resolution */
+char **parse_line(char *line);
+char *find_path(char *command);
+char *_getenv(const char *name);
+
+/* Built-in Operations */
+int check_builtins(char **args, int status);
+void print_env(void);
+
+#endif /* SHELL_H */

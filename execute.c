@@ -1,37 +1,52 @@
 #include "shell.h"
 
 /**
- * execute_command - Forks a child process and executes a command
- * @full_path: The full validated path of the command
- * @args: Array of strings containing the command and arguments
- * Return: The exit status of the executed command
+ * execute_command - Forks a process and executes a command
+ * @args: Array of arguments passed to the command
+ * @shell_name: Name of the shell program
+ *
+ * Return: Exit status of the executed command
  */
-int execute_command(char *full_path, char **args)
+int execute_command(char **args, char *shell_name)
 {
-	pid_t child_pid;
-	int status;
-	int exit_status = 0;
+	pid_t pid;
+	int status = 0, builtin_status;
+	char *full_path = NULL;
 
-	child_pid = fork();
-	if (child_pid == -1)
+	builtin_status = check_builtins(args, status);
+	if (builtin_status != -1)
+		return (builtin_status);
+
+	full_path = find_path(args[0]);
+	if (!full_path)
 	{
-		perror("Fork failure");
-		return (1);
+		fprintf(stderr, "%s: 1: %s: not found\n", shell_name, args[0]);
+		return (127);
 	}
 
-	if (child_pid == 0)
+	pid = fork();
+	if (pid == 0)
 	{
 		if (execve(full_path, args, environ) == -1)
 		{
-			perror("Execution error");
-			exit(127);
+			perror(shell_name);
+			exit(1);
 		}
+	}
+	else if (pid < 0)
+	{
+		perror(shell_name);
+		return (1);
 	}
 	else
 	{
-		wait(&status);
+		waitpid(pid, &status, 0);
 		if (WIFEXITED(status))
-			exit_status = WEXITSTATUS(status);
+			status = WEXITSTATUS(status);
 	}
-	return (exit_status);
+
+	if (full_path != args[0])
+		free(full_path);
+
+	return (status);
 }

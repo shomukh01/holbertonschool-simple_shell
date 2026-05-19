@@ -1,14 +1,15 @@
 #include "shell.h"
 
 /**
- * _getenv - Custom getenv function to find environment variables
- * @name: Name of the variable
- * Return: Pointer to the value, or NULL if not found
+ * _getenv - Custom getenv function to retrieve environment variables
+ * @name: Name of the variable to search for
+ *
+ * Return: Pointer to the variable value, or NULL if not found
  */
 char *_getenv(const char *name)
 {
 	int i = 0;
-	int len = strlen(name);
+	size_t len = strlen(name);
 
 	while (environ[i])
 	{
@@ -20,58 +21,47 @@ char *_getenv(const char *name)
 }
 
 /**
- * check_current_dir - Checks if command exists in current directory
- * @command: The command name
- * Return: Full path if found, or NULL
- */
-char *check_current_dir(char *command)
-{
-	struct stat st;
-
-	if (stat(command, &st) == 0)
-		return (strdup(command));
-	return (NULL);
-}
-
-/**
- * find_path - Searches for a command in the PATH directories
- * @command: The command name
- * Return: Full path of the command if found, or NULL if not found
+ * find_path - Resolves the full path of a command using PATH variable
+ * @command: The command name to search for
+ *
+ * Return: Full path of the command, or NULL if not found
  */
 char *find_path(char *command)
 {
-	char *path_env, *path_copy, *token, *file_path;
+	char *path_env = _getenv("PATH");
+	char *path_copy, *token, *full_path;
 	struct stat st;
 
-	if (command[0] == '/' || command[0] == '.')
-		return (check_current_dir(command));
+	if (command && (command[0] == '/' || command[0] == '.'))
+	{
+		if (stat(command, &st) == 0)
+			return (command);
+	}
 
-	path_env = _getenv("PATH");
-	if (!path_env)
+	if (!path_env || strlen(path_env) == 0)
 		return (NULL);
-	if (strlen(path_env) == 0)
-		return (check_current_dir(command));
 
 	path_copy = strdup(path_env);
 	token = strtok(path_copy, ":");
-	while (token != NULL)
+
+	while (token)
 	{
-		file_path = malloc(strlen(token) + strlen(command) + 2);
-		if (!file_path)
+		full_path = malloc(strlen(token) + strlen(command) + 2);
+		if (!full_path)
 		{
 			free(path_copy);
 			return (NULL);
 		}
-		strcpy(file_path, token);
-		strcat(file_path, "/");
-		strcat(file_path, command);
+		strcpy(full_path, token);
+		strcat(full_path, "/");
+		strcat(full_path, command);
 
-		if (stat(file_path, &st) == 0)
+		if (stat(full_path, &st) == 0)
 		{
 			free(path_copy);
-			return (file_path);
+			return (full_path);
 		}
-		free(file_path);
+		free(full_path);
 		token = strtok(NULL, ":");
 	}
 	free(path_copy);

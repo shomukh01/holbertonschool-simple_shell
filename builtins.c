@@ -1,7 +1,8 @@
 #include "shell.h"
 
 /**
- * print_env - Prints the current environment variables
+ * print_env - Prints all environment variables to standard output
+ *
  * Return: void
  */
 void print_env(void)
@@ -17,31 +18,28 @@ void print_env(void)
 }
 
 /**
- * check_builtin - Checks if the parsed command is a built-in command
- * @args: Array of arguments (command and its options)
- * @line: The input line to free before exit
- * @last_status: The last executed command's exit status
- * Return: 1 if it is a built-in, 0 otherwise
+ * check_builtins - Evaluates if a command is a shell builtin
+ * @args: Array of tokenized arguments
+ * @status: Current exit status to return on exit command
+ *
+ * Return: Builtin execution status, or -1 if not a builtin
  */
-int check_builtin(char **args, char *line, int last_status)
+int check_builtins(char **args, int status)
 {
-	if (args == NULL || args[0] == NULL)
-		return (0);
+	if (!args[0])
+		return (-1);
 
-	/* Check for exit built-in */
 	if (strcmp(args[0], "exit") == 0)
 	{
-		free(args);
-		free(line);
-		exit(last_status);
+		free(args[0]);
+		exit(status);
 	}
 
-	/* Task 6: Check for env built-in */
 	if (strcmp(args[0], "env") == 0)
 	{
 		print_env();
-		return (1);
+		return (0);
 	}
 
-	return (0);
+	return (-1);
 }
