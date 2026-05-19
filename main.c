@@ -22,7 +22,6 @@ void handle_sigint(int sig)
 int main(int ac, char **av)
 {
 	char *line = NULL;
-	char **args = NULL;
 	size_t len = 0;
 	ssize_t nread;
 	int status = 0;
@@ -47,12 +46,10 @@ int main(int ac, char **av)
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		args = parse_line(line);
-		if (args && args[0])
+		if (strlen(line) > 0)
 		{
-			status = execute_command(args, av[0]);
+			status = execute_logical(line, av[0]);
 		}
-		free(args);
 	}
 	free(line);
 	return (status);

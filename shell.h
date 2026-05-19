@@ -24,4 +24,5 @@ void handle_sigint(int sig);
 char **parse_line(char *line);
 int execute_command(char **args, char *shell_name);
 char *find_path(char *command);
+int execute_logical(char *line, char *shell_name);
 #endif
