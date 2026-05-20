@@ -13,6 +13,24 @@ void handle_sigint(int sig)
 }
 
 /**
+ * is_empty_line - checks if line contains only spaces or tabs
+ * @line: input line
+ *
+ * Return: 1 if empty, 0 otherwise
+ */
+int is_empty_line(char *line)
+{
+	int i;
+
+	for (i = 0; line[i] != '\0'; i++)
+	{
+		if (line[i] != ' ' && line[i] != '\t')
+			return (0);
+	}
+	return (1);
+}
+
+/**
  * main - Entry point for the custom simple shell
  * @ac: Argument count
  * @av: Argument vector
@@ -49,11 +67,12 @@ int main(int ac, char **av)
 
 		remove_comments(line);
 
-		if (strlen(line) > 0)
+		if (strlen(line) > 0 && is_empty_line(line) == 0)
 		{
 			status = execute_logical(line, av[0]);
 		}
 	}
+
 	free(line);
 	return (status);
 }
@@ -67,12 +86,19 @@ int main(int ac, char **av)
 void remove_comments(char *line)
 {
 	int i;
+	int j;
 
 	for (i = 0; line[i] != '\0'; i++)
 	{
 		if (line[i] == '#' && (i == 0 ||
 		    line[i - 1] == ' ' || line[i - 1] == '\t'))
 		{
+			j = i - 1;
+			while (j >= 0 && (line[j] == ' ' || line[j] == '\t'))
+			{
+				line[j] = '\0';
+				j--;
+			}
 			line[i] = '\0';
 			break;
 		}
