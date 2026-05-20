@@ -13,7 +13,7 @@ int execute_logical(char *line, char *shell_name)
 	char *operators[100];
 	int i = 0, j = 0, status = 0, op_count = 0;
 
-	commands = malloc(sizeof(char *) * 100);
+	commands = calloc(100, sizeof(char *));
 	if (!commands)
 		return (1);
 
