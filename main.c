@@ -25,6 +25,7 @@ int main(int ac, char **av)
 	size_t len = 0;
 	ssize_t nread;
 	int status = 0;
+
 	(void)ac;
 
 	signal(SIGINT, handle_sigint);
@@ -46,6 +47,8 @@ int main(int ac, char **av)
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
+		remove_comments(line);
+
 		if (strlen(line) > 0)
 		{
 			status = execute_logical(line, av[0]);
@@ -53,4 +56,24 @@ int main(int ac, char **av)
 	}
 	free(line);
 	return (status);
+}
+
+/**
+ * remove_comments - removes comments from input line
+ * @line: input line
+ *
+ * Return: void
+ */
+void remove_comments(char *line)
+{
+	int i;
+
+	for (i = 0; line[i] != '\0'; i++)
+	{
+		if (line[i] == '#')
+		{
+			line[i] = '\0';
+			break;
+		}
+	}
 }

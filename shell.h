@@ -27,4 +27,6 @@ char *_getenv(const char *name);
 int check_builtins(char **args, int status);
 void print_env(void);
 
+void remove_comments(char *line);
+
 #endif /* SHELL_H */
