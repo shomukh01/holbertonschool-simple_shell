@@ -13,18 +13,25 @@ int execute_logical(char *line, char *shell_name)
 	char *operators[100];
 	int i = 0, j = 0, status = 0, op_count = 0;
 
-	commands = calloc(100, sizeof(char *));
+	commands = malloc(sizeof(char *) * 100);
 	if (!commands)
 		return (1);
+
+	for (i = 0; i < 100; i++)
+		commands[i] = NULL;
+
+	i = 0;
 
 	commands[i] = strtok(line, " \t\r\n\a");
 	while (commands[i] != NULL)
 	{
-		if (strcmp(commands[i], "&&") == 0 || strcmp(commands[i], "||") == 0)
+		if (strcmp(commands[i], "&&") == 0 ||
+		    strcmp(commands[i], "||") == 0)
 		{
 			operators[op_count++] = commands[i];
 			commands[i] = NULL;
 		}
+
 		i++;
 		commands[i] = strtok(NULL, " \t\r\n\a");
 	}
@@ -45,11 +52,14 @@ int execute_logical(char *line, char *shell_name)
 
 			if (strcmp(op, "&&") == 0 && status != 0)
 				break;
+
 			if (strcmp(op, "||") == 0 && status == 0)
 				break;
 		}
+
 		j = next_j + 1;
 	}
+
 	free(commands);
 	return (status);
 }
