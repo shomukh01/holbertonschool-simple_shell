@@ -26,6 +26,8 @@ int _setenv(const char *variable, const char *value)
 {
 	int i = 0, len, var_len;
 	char *new_var;
+	static char *allocated_vars[100]; /* Tracks our malloc'ed pointers */
+	static int alloc_count = 0;
 
 	if (!variable || !value || _strlen(variable) == 0)
 		return (-1);
@@ -36,39 +38,44 @@ int _setenv(const char *variable, const char *value)
 	if (!new_var)
 		return (-1);
 
-	/* Safely copy variable name without shifting the original pointer */
-	i = 0;
-	while (variable[i])
-	{
+	for (i = 0; variable[i]; i++)
 		new_var[i] = variable[i];
-		i++;
-	}
 	new_var[i++] = '=';
-
-	/* Copy the value directly after the '=' sign */
 	len = 0;
 	while (value[len])
-	{
 		new_var[i++] = value[len++];
-	}
 	new_var[i] = '\0';
 
-	/* Check if variable already exists using a solid length anchor */
 	i = 0;
 	while (environ[i])
 	{
 		if (_strncmp(environ[i], variable, var_len) == 0 &&
 			environ[i][var_len] == '=')
 		{
-			environ[i] = new_var; /* Update inline */
+			/* Check if the old pointer was allocated by us, if so free it */
+			int k;
+			for (k = 0; k < alloc_count; k++)
+			{
+				if (allocated_vars[k] == environ[i])
+				{
+					free(environ[i]);
+					allocated_vars[k] = new_var; /* Update tracker */
+					environ[i] = new_var;
+					return (0);
+				}
+			}
+			/* If it wasn't allocated by us (system env), we don't free it */
+			environ[i] = new_var;
+			if (alloc_count < 100)
+				allocated_vars[alloc_count++] = new_var;
 			return (0);
 		}
 		i++;
 	}
-
-	/* Append to the end if it's a completely new variable */
 	environ[i] = new_var;
 	environ[i + 1] = NULL;
+	if (alloc_count < 100)
+		allocated_vars[alloc_count++] = new_var;
 	return (0);
 }
 
