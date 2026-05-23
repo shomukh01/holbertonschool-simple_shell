@@ -1,9 +1,7 @@
 #include "shell.h"
 
 /**
- * print_env - Prints all environment variables to standard output
- *
- * Return: void
+ * print_env - Prints all the environment variables to stdout
  */
 void print_env(void)
 {
@@ -18,20 +16,34 @@ void print_env(void)
 }
 
 /**
- * check_builtins - Evaluates if a command is a shell builtin
+ * check_builtins - Checks and executes built-in shell commands
  * @args: Array of tokenized arguments
- * @status: Current exit status to return on exit command
+ * @status: The current exit status of the last executed command
+ * @shell_name: Name of the shell program for printing custom errors
  *
- * Return: Builtin execution status, or -1 if not a builtin
+ * Return: 0 if built-in executed, -1 if command is not a built-in
  */
-int check_builtins(char **args, int status)
+int check_builtins(char **args, int status, char *shell_name)
 {
-	if (!args[0])
-		return (-1);
-
 	if (_strcmp(args[0], "exit") == 0)
 	{
-		free(args[0]);
+		if (args[1] != NULL)
+		{
+			int exit_code = _atoi(args[1]);
+
+			if (exit_code == -1)
+			{
+				/* Print exact standard shell error to stderr */
+				write(STDERR_FILENO, shell_name, _strlen(shell_name));
+				write(STDERR_FILENO, ": 1: exit: Illegal number: ", 27);
+				write(STDERR_FILENO, args[1], _strlen(args[1]));
+				write(STDERR_FILENO, "\n", 1);
+				return (2); /* Special return code for illegal numbers */
+			}
+			free(args);
+			exit(exit_code);
+		}
+		free(args);
 		exit(status);
 	}
 

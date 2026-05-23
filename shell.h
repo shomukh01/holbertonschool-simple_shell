@@ -17,6 +17,7 @@ int _strcmp(const char *s1, const char *s2);
 int _strncmp(const char *s1, const char *s2, size_t n);
 void *_realloc(void *ptr, size_t old_size, size_t new_size);
 char *_strtok(char *str, const char *delim);
+int _atoi(char *s);
 
 /* Core Logic and Main Handlers */
 int main(int ac, char **av);
@@ -30,7 +31,7 @@ char *find_path(char *command);
 char *_getenv(const char *name);
 
 /* Built-in Operations */
-int check_builtins(char **args, int status);
+int check_builtins(char **args, int status, char *shell_name);
 void print_env(void);
 
 #endif /* SHELL_H */
