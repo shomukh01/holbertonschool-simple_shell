@@ -18,14 +18,14 @@ int execute_logical(char *line, char *shell_name)
 	if (!commands)
 		return (1);
 
-	/* Initialize arrays explicitly to prevent Valgrind uninitialized data error */
 	for (k = 0; k < 100; k++)
 	{
 		commands[k] = NULL;
 		operators[k] = NULL;
 	}
 
-	commands[i] = strtok(line, " \t\r\n\a");
+	/* Replaced standard strtok with custom _strtok */
+	commands[i] = _strtok(line, " \t\r\n\a");
 	while (commands[i] != NULL && i < 99)
 	{
 		if (_strcmp(commands[i], "&&") == 0 || _strcmp(commands[i], "||") == 0)
@@ -34,7 +34,7 @@ int execute_logical(char *line, char *shell_name)
 			commands[i] = NULL;
 		}
 		i++;
-		commands[i] = strtok(NULL, " \t\r\n\a");
+		commands[i] = _strtok(NULL, " \t\r\n\a");
 	}
 
 	while (commands[j] != NULL)

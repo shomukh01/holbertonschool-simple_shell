@@ -41,8 +41,20 @@ char *find_path(char *command)
 	if (!path_env || _strlen(path_env) == 0)
 		return (NULL);
 
-	path_copy = strdup(path_env);
-	token = strtok(path_copy, ":");
+	/* Safe duplication because standard strdup is allowed here */
+	path_copy = malloc(_strlen(path_env) + 1);
+	if (!path_copy)
+		return (NULL);
+	
+	{
+		size_t i;
+		for (i = 0; path_env[i] != '\0'; i++)
+			path_copy[i] = path_env[i];
+		path_copy[i] = '\0';
+	}
+
+	/* Replaced standard strtok with custom _strtok */
+	token = _strtok(path_copy, ":");
 
 	while (token)
 	{
@@ -52,9 +64,16 @@ char *find_path(char *command)
 			free(path_copy);
 			return (NULL);
 		}
-		strcpy(full_path, token);
-		strcat(full_path, "/");
-		strcat(full_path, command);
+		
+		{
+			size_t i, j = 0;
+			for (i = 0; token[i] != '\0'; i++)
+				full_path[j++] = token[i];
+			full_path[j++] = '/';
+			for (i = 0; command[i] != '\0'; i++)
+				full_path[j++] = command[i];
+			full_path[j] = '\0';
+		}
 
 		if (stat(full_path, &st) == 0)
 		{
@@ -62,7 +81,7 @@ char *find_path(char *command)
 			return (full_path);
 		}
 		free(full_path);
-		token = strtok(NULL, ":");
+		token = _strtok(NULL, ":");
 	}
 	free(path_copy);
 	return (NULL);
