@@ -1,39 +1,40 @@
 #include "shell.h"
 
 /**
- * tokenize_input - Splits a string into an array of tokens
- * @line: The input string to tokenize
- * Return: Array of pointers to tokens, or NULL on failure
+ * tokenize_input - Splits an input line into an array of tokens
+ * @line: The input string to parse
+ *
+ * Return: A null-terminated array of tokens, or NULL on allocation failure
  */
 char **tokenize_input(char *line)
 {
-	int bufsize = 64, position = 0;
-	char **tokens = malloc(bufsize * sizeof(char *));
+	int buf_size = 64;
+	int position = 0;
+	char **tokens = malloc(buf_size * sizeof(char *));
 	char *token;
+	int old_size;
 
 	if (!tokens)
-	{
-		perror("Allocation error");
 		return (NULL);
-	}
 
-	token = strtok(line, " \t\r\n\a");
+	/* Replaced standard strtok with custom _strtok to comply with rules */
+	token = _strtok(line, " \t\r\n\a");
 	while (token != NULL)
 	{
 		tokens[position] = token;
 		position++;
 
-		if (position >= bufsize)
+		if (position >= buf_size)
 		{
-			bufsize += 64;
-			tokens = realloc(tokens, bufsize * sizeof(char *));
+			old_size = buf_size;
+			buf_size += 64;
+			/* Replaced standard realloc with custom safe _realloc */
+			tokens = _realloc(tokens, old_size * sizeof(char *), buf_size * sizeof(char *));
 			if (!tokens)
-			{
-				perror("Reallocation error");
 				return (NULL);
-			}
 		}
-		token = strtok(NULL, " \t\r\n\a");
+
+		token = _strtok(NULL, " \t\r\n\a");
 	}
 	tokens[position] = NULL;
 	return (tokens);
