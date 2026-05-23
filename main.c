@@ -13,24 +13,6 @@ void handle_sigint(int sig)
 }
 
 /**
- * is_empty_line - checks if line contains only spaces or tabs
- * @line: input line
- *
- * Return: 1 if empty, 0 otherwise
- */
-int is_empty_line(char *line)
-{
-	int i;
-
-	for (i = 0; line[i] != '\0'; i++)
-	{
-		if (line[i] != ' ' && line[i] != '\t')
-			return (0);
-	}
-	return (1);
-}
-
-/**
  * main - Entry point for the custom simple shell
  * @ac: Argument count
  * @av: Argument vector
@@ -43,7 +25,6 @@ int main(int ac, char **av)
 	size_t len = 0;
 	ssize_t nread;
 	int status = 0;
-
 	(void)ac;
 
 	signal(SIGINT, handle_sigint);
@@ -53,7 +34,7 @@ int main(int ac, char **av)
 		if (isatty(STDIN_FILENO))
 			write(STDOUT_FILENO, "#cisfun$ ", 9);
 
-		nread = getline(&line, &len, stdin);
+		nread = _getline(&line, &len, stdin);
 		if (nread == -1)
 		{
 			if (isatty(STDIN_FILENO))
@@ -65,42 +46,11 @@ int main(int ac, char **av)
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		remove_comments(line);
-
-		if (strlen(line) > 0 && is_empty_line(line) == 0)
+		if (strlen(line) > 0)
 		{
 			status = execute_logical(line, av[0]);
 		}
 	}
-
 	free(line);
 	return (status);
-}
-
-/**
- * remove_comments - removes comments from input line
- * @line: input line
- *
- * Return: void
- */
-void remove_comments(char *line)
-{
-	int i;
-	int j;
-
-	for (i = 0; line[i] != '\0'; i++)
-	{
-		if (line[i] == '#' && (i == 0 ||
-		    line[i - 1] == ' ' || line[i - 1] == '\t'))
-		{
-			j = i - 1;
-			while (j >= 0 && (line[j] == ' ' || line[j] == '\t'))
-			{
-				line[j] = '\0';
-				j--;
-			}
-			line[i] = '\0';
-			break;
-		}
-	}
 }
