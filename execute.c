@@ -1,52 +1,61 @@
 #include "shell.h"
 
 /**
- * execute_command - Forks a process and executes a command
- * @args: Array of arguments passed to the command
- * @shell_name: Name of the shell program
+ * execute_command - Executes built-ins or forks a process to run external binaries
+ * @args: Array of tokenized arguments/commands
+ * @shell_name: Name of the shell executable (e.g., argv[0]) for error reporting
  *
- * Return: Exit status of the executed command
+ * Return: Status code of the executed command or built-in
  */
 int execute_command(char **args, char *shell_name)
 {
-	pid_t pid;
-	int status = 0, builtin_status;
-	char *full_path = NULL;
+	int builtin_status;
+	pid_t child_pid;
+	int status = 0;
+	char *actual_command;
 
-	builtin_status = check_builtins(args, status);
+	if (args == NULL || args[0] == NULL)
+		return (0);
+
+	/* Updated call to include shell_name to fix the compilation error */
+	builtin_status = check_builtins(args, status, shell_name);
 	if (builtin_status != -1)
 		return (builtin_status);
 
-	full_path = find_path(args[0]);
-	if (!full_path)
+	actual_command = find_path(args[0]);
+	if (actual_command == NULL)
 	{
-		fprintf(stderr, "%s: 1: %s: not found\n", shell_name, args[0]);
+		/* Print standard error if command not found */
+		write(STDERR_FILENO, shell_name, _strlen(shell_name));
+		write(STDERR_FILENO, ": 1: ", 5);
+		write(STDERR_FILENO, args[0], _strlen(args[0]));
+		write(STDERR_FILENO, ": not found\n", 12);
 		return (127);
 	}
 
-	pid = fork();
-	if (pid == 0)
+	child_pid = fork();
+	if (child_pid == 0)
 	{
-		if (execve(full_path, args, environ) == -1)
+		if (execve(actual_command, args, environ) == -1)
 		{
 			perror(shell_name);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
-	else if (pid < 0)
+	else if (child_pid < 0)
 	{
 		perror(shell_name);
 		return (1);
 	}
 	else
 	{
-		waitpid(pid, &status, 0);
+		waitpid(child_pid, &status, 0);
 		if (WIFEXITED(status))
-			status = WEXITSTATUS(status);
+			return (WEXITSTATUS(status));
 	}
 
-	if (full_path != args[0])
-		free(full_path);
+	if (actual_command != args[0])
+		free(actual_command);
 
-	return (status);
+	return (0);
 }
