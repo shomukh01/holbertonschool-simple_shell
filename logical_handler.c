@@ -4,14 +4,15 @@
  * execute_logical - Parses and executes commands with && and || operators
  * @line: The raw input line from the user
  * @shell_name: Name of the shell executable for error reporting
+ * @status: The current tracking exit status
  *
  * Return: Status of the last executed command
  */
-int execute_logical(char *line, char *shell_name)
+int execute_logical(char *line, char *shell_name, int status)
 {
 	char **commands = NULL;
 	char *operators[100];
-	int i = 0, j = 0, status = 0, op_count = 0;
+	int i = 0, j = 0, op_count = 0;
 	int k;
 
 	commands = malloc(sizeof(char *) * 100);
@@ -44,8 +45,8 @@ int execute_logical(char *line, char *shell_name)
 		while (commands[next_j] != NULL)
 			next_j++;
 
-		/* Fixed parameter mismatch: passed 'line' as the 3rd argument */
-		status = execute_command(args, shell_name, line);
+		/* Pass and update the status dynamically */
+		status = execute_command(args, shell_name, line, status);
 
 		if (j / 2 < op_count)
 		{

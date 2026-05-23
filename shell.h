@@ -22,8 +22,8 @@ int _atoi(char *s);
 /* Core Logic and Main Handlers */
 int main(int ac, char **av);
 void handle_sigint(int sig);
-int execute_logical(char *line, char *shell_name);
-int execute_command(char **args, char *shell_name, char *line);
+int execute_logical(char *line, char *shell_name, int status);
+int execute_command(char **args, char *shell_name, char *line, int status);
 ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
 
 /* Parsing and Path Resolution */

@@ -1,56 +1,60 @@
 #include "shell.h"
 
 /**
- * handle_sigint - Handles the SIGINT signal (Ctrl+C)
+ * handle_sigint - Signal handler for SIGINT (Ctrl+C)
  * @sig: The signal number
- *
- * Return: void
  */
 void handle_sigint(int sig)
 {
 	(void)sig;
-	write(STDOUT_FILENO, "\n#cisfun$ ", 10);
+	write(STDOUT_FILENO, "\n$ ", 3);
 }
 
 /**
  * main - Entry point for the custom simple shell
  * @ac: Argument count
- * @av: Argument vector
+ * @av: Argument vector containing program name and parameters
  *
- * Return: Status of the last executed command
+ * Return: The final exit status of the shell execution
  */
 int main(int ac, char **av)
 {
 	char *line = NULL;
 	size_t len = 0;
-	ssize_t nread;
+	ssize_t read_bytes;
 	int status = 0;
+	int is_interactive = isatty(STDIN_FILENO);
+
 	(void)ac;
 
+	/* Register custom signal handler for Ctrl+C to maintain prompt */
 	signal(SIGINT, handle_sigint);
 
 	while (1)
 	{
-		if (isatty(STDIN_FILENO))
-			write(STDOUT_FILENO, "#cisfun$ ", 9);
+		/* Display prompt only in interactive mode */
+		if (is_interactive)
+			write(STDOUT_FILENO, "$ ", 2);
 
-		nread = _getline(&line, &len, stdin);
-		if (nread == -1)
+		read_bytes = _getline(&line, &len, stdin);
+
+		/* Handle End-Of-File (EOF) / Ctrl+D conditions safely */
+		if (read_bytes == -1)
 		{
-			if (isatty(STDIN_FILENO))
+			if (is_interactive)
 				write(STDOUT_FILENO, "\n", 1);
 			free(line);
-			exit(status);
+			return (status);
 		}
 
-		if (line[nread - 1] == '\n')
-			line[nread - 1] = '\0';
-
-		if (_strlen(line) > 0)
+		/* Process the line if it is not just an empty newline character */
+		if (read_bytes > 1 && line[0] != '\n')
 		{
-			status = execute_logical(line, av[0]);
+			/* Dynamically maintain and update the exit status */
+			status = execute_logical(line, av[0], status);
 		}
 	}
+
 	free(line);
 	return (status);
 }
