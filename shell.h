@@ -23,7 +23,7 @@ int _atoi(char *s);
 int main(int ac, char **av);
 void handle_sigint(int sig);
 int execute_logical(char *line, char *shell_name);
-int execute_command(char **args, char *shell_name);
+int execute_command(char **args, char *shell_name, char *line);
 ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
 
 /* Parsing and Path Resolution */
@@ -31,7 +31,7 @@ char *find_path(char *command);
 char *_getenv(const char *name);
 
 /* Built-in Operations */
-int check_builtins(char **args, int status, char *shell_name);
+int check_builtins(char **args, int status, char *shell_name, char *line);
 void print_env(void);
 
 #endif /* SHELL_H */
