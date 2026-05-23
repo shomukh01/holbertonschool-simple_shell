@@ -12,13 +12,21 @@ int execute_logical(char *line, char *shell_name)
 	char **commands = NULL;
 	char *operators[100];
 	int i = 0, j = 0, status = 0, op_count = 0;
+	int k;
 
 	commands = malloc(sizeof(char *) * 100);
 	if (!commands)
 		return (1);
 
+	/* Initialize arrays explicitly to prevent Valgrind uninitialized data error */
+	for (k = 0; k < 100; k++)
+	{
+		commands[k] = NULL;
+		operators[k] = NULL;
+	}
+
 	commands[i] = strtok(line, " \t\r\n\a");
-	while (commands[i] != NULL)
+	while (commands[i] != NULL && i < 99)
 	{
 		if (_strcmp(commands[i], "&&") == 0 || _strcmp(commands[i], "||") == 0)
 		{
@@ -43,10 +51,13 @@ int execute_logical(char *line, char *shell_name)
 		{
 			char *op = operators[j / 2];
 
-			if (_strcmp(op, "&&") == 0 && status != 0)
-				break;
-			if (_strcmp(op, "||") == 0 && status == 0)
-				break;
+			if (op != NULL)
+			{
+				if (_strcmp(op, "&&") == 0 && status != 0)
+					break;
+				if (_strcmp(op, "||") == 0 && status == 0)
+					break;
+			}
 		}
 		j = next_j + 1;
 	}
