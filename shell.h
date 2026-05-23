@@ -33,5 +33,6 @@ char *_getenv(const char *name);
 /* Built-in Operations */
 int check_builtins(char **args, int status, char *shell_name, char *line);
 void print_env(void);
-
+int _setenv(const char *variable, const char *value);
+int _unsetenv(const char *variable);
 #endif /* SHELL_H */
