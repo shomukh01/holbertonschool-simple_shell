@@ -24,7 +24,6 @@ int execute_logical(char *line, char *shell_name)
 		operators[k] = NULL;
 	}
 
-	/* Replaced standard strtok with custom _strtok */
 	commands[i] = _strtok(line, " \t\r\n\a");
 	while (commands[i] != NULL && i < 99)
 	{
@@ -45,7 +44,8 @@ int execute_logical(char *line, char *shell_name)
 		while (commands[next_j] != NULL)
 			next_j++;
 
-		status = execute_command(args, shell_name);
+		/* Fixed parameter mismatch: passed 'line' as the 3rd argument */
+		status = execute_command(args, shell_name, line);
 
 		if (j / 2 < op_count)
 		{
