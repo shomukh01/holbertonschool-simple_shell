@@ -1,3 +1,186 @@
+#include "shell.h"
+
+/* Forward declarations for Betty compliance and safe compilation */
+void print_env(void);
+void free_env_vars(void);
+int _setenv(const char *variable, const char *value);
+int _unsetenv(const char *variable);
+int handle_exit(char **args, int status, char *shell_name, char *line);
+int check_builtins(char **args, int status, char *shell_name, char *line);
+
+/* Static tracking for allocated environment variables to clean on exit */
+static char *allocated_vars[100];
+static int alloc_count;
+
+/**
+ * print_env - Prints all the environment variables to stdout
+ */
+void print_env(void)
+{
+	int i = 0;
+
+	while (environ[i])
+	{
+		write(STDOUT_FILENO, environ[i], _strlen(environ[i]));
+		write(STDOUT_FILENO, "\n", 1);
+		i++;
+	}
+}
+
+/**
+ * free_env_vars - Frees all custom environment variables allocated at runtime
+ */
+void free_env_vars(void)
+{
+	int i;
+
+	for (i = 0; i < alloc_count; i++)
+	{
+		if (allocated_vars[i])
+		{
+			free(allocated_vars[i]);
+			allocated_vars[i] = NULL;
+		}
+	}
+	alloc_count = 0;
+}
+
+/**
+ * _setenv - Initializes a new environment variable, or modifies an existing one
+ * @variable: The name of the environment variable
+ * @value: The value to assign to the variable
+ *
+ * Return: 0 on success, -1 on failure
+ */
+int _setenv(const char *variable, const char *value)
+{
+	int i = 0, len, var_len, k;
+	char *new_var;
+
+	if (!variable || !value || _strlen(variable) == 0)
+		return (-1);
+
+	var_len = _strlen(variable);
+	len = var_len + _strlen(value) + 2;
+	new_var = malloc(len);
+	if (!new_var)
+		return (-1);
+
+	for (i = 0; variable[i]; i++)
+		new_var[i] = variable[i];
+	new_var[i++] = '=';
+	len = 0;
+	while (value[len])
+		new_var[i++] = value[len++];
+	new_var[i] = '\0';
+
+	i = 0;
+	while (environ[i])
+	{
+		if (_strncmp(environ[i], variable, var_len) == 0 &&
+			environ[i][var_len] == '=')
+		{
+			for (k = 0; k < alloc_count; k++)
+			{
+				if (allocated_vars[k] == environ[i])
+				{
+					free(environ[i]);
+					allocated_vars[k] = new_var;
+					environ[i] = new_var;
+					return (0);
+				}
+			}
+			environ[i] = new_var;
+			if (alloc_count < 100)
+				allocated_vars[alloc_count++] = new_var;
+			return (0);
+		}
+		i++;
+	}
+	environ[i] = new_var;
+	environ[i + 1] = NULL;
+	if (alloc_count < 100)
+		allocated_vars[alloc_count++] = new_var;
+	return (0);
+}
+
+/**
+ * _unsetenv - Removes an environment variable from the system
+ * @variable: The name of the environment variable to remove
+ *
+ * Return: 0 on success, -1 on failure
+ */
+int _unsetenv(const char *variable)
+{
+	int i = 0, j, len, k;
+
+	if (!variable || _strlen(variable) == 0)
+		return (-1);
+
+	len = _strlen(variable);
+	while (environ[i])
+	{
+		if (_strncmp(environ[i], variable, len) == 0 && environ[i][len] == '=')
+		{
+			for (k = 0; k < alloc_count; k++)
+			{
+				if (allocated_vars[k] == environ[i])
+				{
+					free(environ[i]);
+					allocated_vars[k] = NULL;
+					break;
+				}
+			}
+			j = i;
+			while (environ[j])
+			{
+				environ[j] = environ[j + 1];
+				j++;
+			}
+			return (0);
+		}
+		i++;
+	}
+	return (0);
+}
+
+/**
+ * handle_exit - Handles the exit built-in command safely
+ * @args: Array of tokenized arguments
+ * @status: The current exit status of the shell
+ * @shell_name: Name of the shell program for error printing
+ * @line: The raw buffer line to free before exiting
+ *
+ * Return: 2 on illegal number, or exits the process directly
+ */
+int handle_exit(char **args, int status, char *shell_name, char *line)
+{
+	int exit_code;
+
+	if (args[1] != NULL)
+	{
+		exit_code = _atoi(args[1]);
+		if (exit_code == -1)
+		{
+			write(STDERR_FILENO, shell_name, _strlen(shell_name));
+			write(STDERR_FILENO, ": 1: exit: Illegal number: ", 27);
+			write(STDERR_FILENO, args[1], _strlen(args[1]));
+			write(STDERR_FILENO, "\n", 1);
+			return (2);
+		}
+		free(args);
+		if (line)
+			free(line);
+		free_env_vars();
+		exit(exit_code);
+	}
+	free(args);
+	if (line)
+		free(line);
+	free_env_vars();
+	exit(status);
+}
+
 /**
  * check_builtins - Checks and executes built-in shell commands
  * @args: Array of tokenized arguments
@@ -19,21 +202,18 @@ int check_builtins(char **args, int status, char *shell_name, char *line)
 	}
 	if (_strcmp(args[0], "setenv") == 0)
 	{
-		/* If parameters are missing, just return 0 to continue execution smoothly */
 		if (!args[1] || !args[2])
 		{
 			return (0);
 		}
 		if (_setenv(args[1], args[2]) == -1)
 		{
-			/* Fail silently or handle internal error without crashing the flow */
 			return (0);
 		}
 		return (0);
 	}
 	if (_strcmp(args[0], "unsetenv") == 0)
 	{
-		/* If parameter is missing, return 0 and skip silently */
 		if (!args[1])
 		{
 			return (0);
