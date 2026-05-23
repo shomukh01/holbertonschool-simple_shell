@@ -1,6 +1,21 @@
 #include "shell.h"
 
 /**
+ * print_env - Prints all the environment variables to stdout
+ */
+void print_env(void)
+{
+	int i = 0;
+
+	while (environ[i])
+	{
+		write(STDOUT_FILENO, environ[i], _strlen(environ[i]));
+		write(STDOUT_FILENO, "\n", 1);
+		i++;
+	}
+}
+
+/**
  * _setenv - Initializes a new environment variable, or modifies an existing one
  * @variable: The name of the environment variable
  * @value: The value to assign to the variable
@@ -12,8 +27,12 @@ int _setenv(const char *variable, const char *value)
 	int i = 0, len;
 	char *new_var;
 
-	if (!variable || _strlen(variable) == 0 || _strtok((char *)variable, "="))
+	if (!variable || _strlen(variable) == 0)
 		return (-1);
+
+	/* If value is NULL, treat it as an empty string "" */
+	if (!value)
+		value = "";
 
 	/* Calculate space needed for VARIABLE=VALUE\0 */
 	len = _strlen(variable) + _strlen(value) + 2;
@@ -22,7 +41,6 @@ int _setenv(const char *variable, const char *value)
 		return (-1);
 
 	/* Construct the string "VARIABLE=VALUE" */
-	/* Direct usage of standard functions is avoided by standard memory copy/concat logic */
 	i = 0;
 	while (*variable)
 		new_var[i++] = *variable++;
@@ -126,21 +144,24 @@ int check_builtins(char **args, int status, char *shell_name, char *line)
 	}
 	if (_strcmp(args[0], "setenv") == 0)
 	{
-		if (!args[1] || !args[2])
+		/* Case: setenv without parameters -> Display environment */
+		if (!args[1])
 		{
-			write(STDERR_FILENO, "setenv: Invalid syntax. Usage: setenv VAR VAL\n", 46);
-			return (1);
+			print_env();
+			return (0);
 		}
+		/* Case: setenv with only one parameter -> value is empty */
 		if (_setenv(args[1], args[2]) == -1)
 			write(STDERR_FILENO, "setenv: Failed to set variable\n", 31);
 		return (0);
 	}
 	if (_strcmp(args[0], "unsetenv") == 0)
 	{
+		/* Case: unsetenv without parameters -> Display environment */
 		if (!args[1])
 		{
-			write(STDERR_FILENO, "unsetenv: Invalid syntax. Usage: unsetenv VAR\n", 46);
-			return (1);
+			print_env();
+			return (0);
 		}
 		if (_unsetenv(args[1]) == -1)
 			write(STDERR_FILENO, "unsetenv: Failed to unset variable\n", 35);
