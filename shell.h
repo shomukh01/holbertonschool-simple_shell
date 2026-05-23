@@ -36,4 +36,6 @@ int handle_exit(char **args, int status, char *shell_name, char *line);
 void print_env(void);
 int _setenv(const char *variable, const char *value);
 int _unsetenv(const char *variable);
+void free_env_vars(void);
+
 #endif /* SHELL_H */

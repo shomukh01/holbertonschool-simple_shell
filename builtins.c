@@ -1,5 +1,9 @@
 #include "shell.h"
 
+/* Static tracking for allocated environment variables to clean on exit */
+static char *allocated_vars[100];
+static int alloc_count;
+
 /**
  * print_env - Prints all the environment variables to stdout
  */
@@ -16,6 +20,24 @@ void print_env(void)
 }
 
 /**
+ * free_env_vars - Frees all custom environment variables allocated at runtime
+ */
+void free_env_vars(void)
+{
+	int i;
+
+	for (i = 0; i < alloc_count; i++)
+	{
+		if (allocated_vars[i])
+		{
+			free(allocated_vars[i]);
+			allocated_vars[i] = NULL;
+		}
+	}
+	alloc_count = 0;
+}
+
+/**
  * _setenv - Initializes a new environment variable, or modifies an existing one
  * @variable: The name of the environment variable
  * @value: The value to assign to the variable
@@ -24,10 +46,8 @@ void print_env(void)
  */
 int _setenv(const char *variable, const char *value)
 {
-	int i = 0, len, var_len;
+	int i = 0, len, var_len, k;
 	char *new_var;
-	static char *allocated_vars[100]; /* Tracks our malloc'ed pointers */
-	static int alloc_count = 0;
 
 	if (!variable || !value || _strlen(variable) == 0)
 		return (-1);
@@ -52,19 +72,16 @@ int _setenv(const char *variable, const char *value)
 		if (_strncmp(environ[i], variable, var_len) == 0 &&
 			environ[i][var_len] == '=')
 		{
-			/* Check if the old pointer was allocated by us, if so free it */
-			int k;
 			for (k = 0; k < alloc_count; k++)
 			{
 				if (allocated_vars[k] == environ[i])
 				{
 					free(environ[i]);
-					allocated_vars[k] = new_var; /* Update tracker */
+					allocated_vars[k] = new_var;
 					environ[i] = new_var;
 					return (0);
 				}
 			}
-			/* If it wasn't allocated by us (system env), we don't free it */
 			environ[i] = new_var;
 			if (alloc_count < 100)
 				allocated_vars[alloc_count++] = new_var;
@@ -87,7 +104,7 @@ int _setenv(const char *variable, const char *value)
  */
 int _unsetenv(const char *variable)
 {
-	int i = 0, j, len;
+	int i = 0, j, len, k;
 
 	if (!variable || _strlen(variable) == 0)
 		return (-1);
@@ -97,6 +114,15 @@ int _unsetenv(const char *variable)
 	{
 		if (_strncmp(environ[i], variable, len) == 0 && environ[i][len] == '=')
 		{
+			for (k = 0; k < alloc_count; k++)
+			{
+				if (allocated_vars[k] == environ[i])
+				{
+					free(environ[i]);
+					allocated_vars[k] = NULL;
+					break;
+				}
+			}
 			j = i;
 			while (environ[j])
 			{
@@ -137,11 +163,13 @@ int handle_exit(char **args, int status, char *shell_name, char *line)
 		free(args);
 		if (line)
 			free(line);
+		free_env_vars();
 		exit(exit_code);
 	}
 	free(args);
 	if (line)
 		free(line);
+	free_env_vars();
 	exit(status);
 }
 

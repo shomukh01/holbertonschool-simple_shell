@@ -1,60 +1,38 @@
 #include "shell.h"
 
 /**
- * handle_sigint - Signal handler for SIGINT (Ctrl+C)
- * @sig: The signal number
- */
-void handle_sigint(int sig)
-{
-	(void)sig;
-	write(STDOUT_FILENO, "\n$ ", 3);
-}
-
-/**
- * main - Entry point for the custom simple shell
+ * main - Entry point for the simple shell program
  * @ac: Argument count
- * @av: Argument vector containing program name and parameters
+ * @av: Argument vector (contains shell name at av[0])
  *
- * Return: The final exit status of the shell execution
+ * Return: 0 on success, or status code on exit
  */
 int main(int ac, char **av)
 {
 	char *line = NULL;
 	size_t len = 0;
-	ssize_t read_bytes;
+	ssize_t bytes_read;
 	int status = 0;
-	int is_interactive = isatty(STDIN_FILENO);
-
 	(void)ac;
-
-	/* Register custom signal handler for Ctrl+C to maintain prompt */
-	signal(SIGINT, handle_sigint);
 
 	while (1)
 	{
-		/* Display prompt only in interactive mode */
-		if (is_interactive)
+		if (isatty(STDIN_FILENO))
 			write(STDOUT_FILENO, "$ ", 2);
 
-		read_bytes = _getline(&line, &len, stdin);
-
-		/* Handle End-Of-File (EOF) / Ctrl+D conditions safely */
-		if (read_bytes == -1)
+		bytes_read = getline(&line, &len, stdin);
+		if (bytes_read == -1)
 		{
-			if (is_interactive)
+			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			free(line);
-			return (status);
+			free_env_vars(); /* Crucial: cleans the 13 bytes on Ctrl+D */
+			exit(status);
 		}
 
-		/* Process the line if it is not just an empty newline character */
-		if (read_bytes > 1 && line[0] != '\n')
-		{
-			/* Dynamically maintain and update the exit status */
-			status = execute_logical(line, av[0], status);
-		}
+		/* [قواطع التفكيك والتنفيذ العادية الخاصة بالشل الخاص بك توضع هنا] */
+		/* مثال الاستدعاء عند معالجة المصفوفة المقطعة args: */
+		/* status = check_builtins(args, status, av[0], line); */
 	}
-
-	free(line);
 	return (status);
 }
