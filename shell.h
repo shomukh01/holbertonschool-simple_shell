@@ -18,6 +18,8 @@ void handle_sigint(int sig);
 int execute_logical(char *line, char *shell_name);
 int execute_command(char **args, char *shell_name);
 ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
+void *_realloc(void *ptr, size_t old_size, size_t new_size);
+
 
 /* Custom Safe String Helpers */
 size_t _strlen(const char *s);

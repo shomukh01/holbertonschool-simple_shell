@@ -52,3 +52,41 @@ int _strncmp(const char *s1, const char *s2, size_t n)
 		i++;
 	return (s1[i] - s2[i]);
 }
+
+/**
+ * _realloc - Reallocates a memory block using malloc and free
+ * @ptr: Pointer to the previous memory block
+ * @old_size: Size in bytes of the allocated space for ptr
+ * @new_size: New size in bytes of the new memory block
+ *
+ * Return: Pointer to the newly allocated memory block, or NULL on failure
+ */
+void *_realloc(void *ptr, size_t old_size, size_t new_size)
+{
+	char *new_ptr;
+	char *old_ptr;
+	size_t i;
+
+	if (new_size == old_size)
+		return (ptr);
+
+	if (ptr == NULL)
+		return (malloc(new_size));
+
+	if (new_size == 0 && ptr != NULL)
+	{
+		free(ptr);
+		return (NULL);
+	}
+
+	new_ptr = malloc(new_size);
+	if (!new_ptr)
+		return (NULL);
+
+	old_ptr = (char *)ptr;
+	for (i = 0; i < old_size && i < new_size; i++)
+		new_ptr[i] = old_ptr[i];
+
+	free(ptr);
+	return (new_ptr);
+}

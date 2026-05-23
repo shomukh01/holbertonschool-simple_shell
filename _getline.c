@@ -14,6 +14,7 @@ ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
 	static size_t buf_pos;
 	static size_t buf_size;
 	size_t count = 0;
+	size_t old_n;
 	char c;
 	(void)stream;
 
@@ -30,7 +31,6 @@ ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
 	{
 		if (buf_pos >= buf_size)
 		{
-			/* Replaced fileno with STDIN_FILENO to pass allowed functions test */
 			int bytes_read = read(STDIN_FILENO, buffer, 1024);
 
 			if (bytes_read <= 0)
@@ -45,8 +45,10 @@ ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
 		c = buffer[buf_pos++];
 		if (count >= *n - 1)
 		{
+			old_n = *n;
 			*n *= 2;
-			*lineptr = realloc(*lineptr, *n);
+			/* Replaced standard realloc with custom implementation to pass tests */
+			*lineptr = _realloc(*lineptr, old_n, *n);
 			if (*lineptr == NULL)
 				return (-1);
 		}
