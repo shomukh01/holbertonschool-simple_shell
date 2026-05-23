@@ -14,6 +14,7 @@ int main(int ac, char **av)
 	ssize_t bytes_read;
 	int status = 0;
 	(void)ac;
+	(void)av;
 
 	while (1)
 	{
@@ -26,13 +27,9 @@ int main(int ac, char **av)
 			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			free(line);
-			free_env_vars(); /* Crucial: cleans the 13 bytes on Ctrl+D */
+			free_env_vars();
 			exit(status);
 		}
-
-		/* [قواطع التفكيك والتنفيذ العادية الخاصة بالشل الخاص بك توضع هنا] */
-		/* مثال الاستدعاء عند معالجة المصفوفة المقطعة args: */
-		/* status = check_builtins(args, status, av[0], line); */
 	}
 	return (status);
 }
