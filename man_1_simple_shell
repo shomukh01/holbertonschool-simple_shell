@@ -1,12 +1,45 @@
-.TH SIMPLE_SHELL 1 "May 2026" "Simple Shell" "User Commands"
+.TH SIMPLE_SHELL 1 "MAY 2026" "Systems Engineering" "Linux User's Manual"
 .SH NAME
-simple_shell - a simple UNIX command line interpreter
+hsh \- Custom Unix command-line interpreter (shell)
 .SH SYNOPSIS
-./hsh
+.B ./hsh
 .SH DESCRIPTION
-simple_shell is a basic shell written in C.
-It reads commands from standard input and executes them using execve.
-.SH COMPILATION
-gcc -Wall -Werror -Wextra -pedantic -std=gnu89 *.c -o hsh
+.B hsh
+is a minimalist command language interpreter that executes commands read from standard input streams or specialized text pipes. It serves as a practical implementation of standard Unix shell architectures, providing essential subsystem routing and environment manipulation.
+
+The software operates via two distinct execution pathways:
+.TP
+.B Interactive Mode
+The application issues a continuous user prompt (\fB#cisfun$\fR) onto standard output, waiting to capture, parse, and execute entered command strings interactively.
+.TP
+.B Non-Interactive Mode
+When commands are piped or redirected into the shell (e.g., via echo or files), \fBhsh\fR processes the input sequentially until reaching an End-Of-File (EOF) token, then exits cleanly.
+.SH CORE FEATURES
+.SS Built-in Commands
+The interpreter natively implements internal routing operations without spawning child forks:
+.TP
+.B exit
+Smoothly terminates the current shell runtime environment, passing the status of the last executed process back to the parent operating system.
+.TP
+.B env
+Retrieves and prints all inherited system environment variables and text structures seamlessly to standard output.
+.SS Path Resolution
+If an entered command does not contain a forward slash (/), the shell dynamically searches through directories listed in the \fBPATH\fR environment variable to locate and execute the corresponding binary.
+.SS Signal Management
+Traps terminal interruptions dynamically. Pressing \fBCtrl+C\fR (\fBSIGINT\fR) resets the current buffer, prints a fresh newline, and re-displays the prompt without crashing the shell environment.
+.SS Conditional Chaining
+Accommodates basic inline logical execution sequences:
+.TP
+.B &&
+Executes the subsequent statement if and only if the prior targeted program exits with an absolute success status code (0).
+.TP
+.B ||
+Executes the following command block if and only if the previous process fails and returns a non-zero exit status.
+.SH DIAGNOSTICS
+Upon encountering an unregistered command or invalid path, \fBhsh\fR prints a standard error format to stderr:
+.I "./hsh: 1: command_name: not found"
+and returns an exit status code of 127.
+.SH SEE ALSO
+sh(1), bash(1), fork(2), execve(2), waitpid(2), signal(2)
 .SH AUTHORS
-Shomukh Aldosari & Mohammed Aldawsari
+Designed and implemented by Shomukh Aldosari & Mohammed Aldawsari.
