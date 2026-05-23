@@ -19,6 +19,12 @@ int execute_logical(char *line, char *shell_name);
 int execute_command(char **args, char *shell_name);
 ssize_t _getline(char **lineptr, size_t *n, FILE *stream);
 
+/* Custom Safe String Helpers */
+size_t _strlen(const char *s);
+int _strcmp(const char *s1, const char *s2);
+int _strncmp(const char *s1, const char *s2, size_t n);
+
+
 /* Parsing and Path Resolution */
 char **parse_line(char *line);
 char *find_path(char *command);

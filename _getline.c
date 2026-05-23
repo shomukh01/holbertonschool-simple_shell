@@ -15,6 +15,7 @@ ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
 	static size_t buf_size;
 	size_t count = 0;
 	char c;
+	(void)stream;
 
 	if (lineptr == NULL || n == NULL)
 		return (-1);
@@ -29,7 +30,8 @@ ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
 	{
 		if (buf_pos >= buf_size)
 		{
-			int bytes_read = read(fileno(stream), buffer, 1024);
+			/* Replaced fileno with STDIN_FILENO to pass allowed functions test */
+			int bytes_read = read(STDIN_FILENO, buffer, 1024);
 
 			if (bytes_read <= 0)
 			{

@@ -9,11 +9,11 @@
 char *_getenv(const char *name)
 {
 	int i = 0;
-	size_t len = strlen(name);
+	size_t len = _strlen(name);
 
 	while (environ[i])
 	{
-		if (strncmp(environ[i], name, len) == 0 && environ[i][len] == '=')
+		if (_strncmp(environ[i], name, len) == 0 && environ[i][len] == '=')
 			return (environ[i] + len + 1);
 		i++;
 	}
@@ -38,7 +38,7 @@ char *find_path(char *command)
 			return (command);
 	}
 
-	if (!path_env || strlen(path_env) == 0)
+	if (!path_env || _strlen(path_env) == 0)
 		return (NULL);
 
 	path_copy = strdup(path_env);
@@ -46,7 +46,7 @@ char *find_path(char *command)
 
 	while (token)
 	{
-		full_path = malloc(strlen(token) + strlen(command) + 2);
+		full_path = malloc(_strlen(token) + _strlen(command) + 2);
 		if (!full_path)
 		{
 			free(path_copy);

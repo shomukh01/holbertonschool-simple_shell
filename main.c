@@ -46,7 +46,7 @@ int main(int ac, char **av)
 		if (line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
 
-		if (strlen(line) > 0)
+		if (_strlen(line) > 0)
 		{
 			status = execute_logical(line, av[0]);
 		}

@@ -20,7 +20,7 @@ int execute_logical(char *line, char *shell_name)
 	commands[i] = strtok(line, " \t\r\n\a");
 	while (commands[i] != NULL)
 	{
-		if (_strcmp(commands[i], "&&") == 0 || _strcmp(commands[i], "||") == 0)
+		if (strcmp(commands[i], "&&") == 0 || strcmp(commands[i], "||") == 0)
 		{
 			operators[op_count++] = commands[i];
 			commands[i] = NULL;
@@ -43,9 +43,9 @@ int execute_logical(char *line, char *shell_name)
 		{
 			char *op = operators[j / 2];
 
-			if (_strcmp(op, "&&") == 0 && status != 0)
+			if (strcmp(op, "&&") == 0 && status != 0)
 				break;
-			if (_strcmp(op, "||") == 0 && status == 0)
+			if (strcmp(op, "||") == 0 && status == 0)
 				break;
 		}
 		j = next_j + 1;

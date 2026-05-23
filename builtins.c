@@ -11,7 +11,7 @@ void print_env(void)
 
 	while (environ[i])
 	{
-		write(STDOUT_FILENO, environ[i], strlen(environ[i]));
+		write(STDOUT_FILENO, environ[i], _strlen(environ[i]));
 		write(STDOUT_FILENO, "\n", 1);
 		i++;
 	}
@@ -29,13 +29,13 @@ int check_builtins(char **args, int status)
 	if (!args[0])
 		return (-1);
 
-	if (strcmp(args[0], "exit") == 0)
+	if (_strcmp(args[0], "exit") == 0)
 	{
 		free(args[0]);
 		exit(status);
 	}
 
-	if (strcmp(args[0], "env") == 0)
+	if (_strcmp(args[0], "env") == 0)
 	{
 		print_env();
 		return (0);
